@@ -1,4 +1,4 @@
-name: Auto Clicker Bot
+name: Auto Refresh Bot
 
 on:
   workflow_dispatch:
@@ -26,8 +26,5 @@ jobs:
           python -m pip install --upgrade pip
           pip install selenium
 
-      - name: Run Bot Script
-        env:
-          BOT_EMAIL: ${{ secrets.BOT_EMAIL }}
-          BOT_PASSWORD: ${{ secrets.BOT_PASSWORD }}
+      - name: Run Auto Refresh Script
         run: python bot.py
