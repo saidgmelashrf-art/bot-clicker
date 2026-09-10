@@ -2,8 +2,6 @@ import time
 import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 options = webdriver.ChromeOptions()
 options.add_argument("--headless")
@@ -16,28 +14,39 @@ email = os.environ.get("BOT_EMAIL")
 password = os.environ.get("BOT_PASSWORD")
 
 try:
-    print("1. فتح صفحة تسجيل الدخول...")
+    print("1. تسجيل الدخول...")
     driver.get("https://ahmed-amedo.com/login")
-    time.sleep(2)
+    time.sleep(3)
 
-    print("2. كتابة بيانات الدخول...")
     driver.find_element(By.XPATH, "//input[@type='email']").send_keys(email)
     driver.find_element(By.XPATH, "//input[@type='password']").send_keys(password)
     driver.find_element(By.XPATH, "//button[@type='submit']").click()
+    time.sleep(5)
 
-    print("3. جاري مراقبة الشاشة لانتظار ظهور زرار 'تشغيل البوت'...")
-    
+    print("2. بدء المراقبة المستمرة كل ثانية...")
     xpath_btn = "//button[contains(text(), 'تشغيل البوت')]"
-    
-    start_button = WebDriverWait(driver, 60).until(
-        EC.element_to_be_clickable((By.XPATH, xpath_btn))
-    )
 
-    start_button.click()
-    print("✅ تم العثور على الزرار والضغط عليه بنجاح!")
+    # الحلقة التكرارية تفحص وجود الزرار كل ثانية لمدة 30 دقيقة
+    for i in range(1800):
+        try:
+            # البحث عن الزرار في الصفحة
+            buttons = driver.find_elements(By.XPATH, xpath_btn)
+            
+            if len(buttons) > 0 and buttons[0].is_displayed():
+                buttons[0].click()
+                print(f"✅ تم العثور على الزرار والضغط عليه بنجاح في الثانية رقم {i+1}!")
+                time.sleep(10) # انتظار قليلاً لتأكيد الضغط
+            else:
+                # إذا لم يكن الزرار موجوداً أو تم الضغط عليه، انتظر ثانية واحدة وكرر الفحص
+                pass
+
+        except Exception as inner_e:
+            pass
+
+        time.sleep(1) # الفحص كل ثانية واحدة بالضبط
 
 except Exception as e:
-    print(f"❌ حدث خطأ أو لم يظهر الزرار في الوقت المحدد: {e}")
+    print(f"❌ حدث خطأ الرئيسي: {e}")
 
 finally:
     driver.quit()
