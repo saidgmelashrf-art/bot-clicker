@@ -6,57 +6,58 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-# إعداد خيارات المتصفح للعمل في بيئة GitHub Actions
+# جلب البيانات من Secrets
+email = os.environ.get("BOT_EMAIL")
+password = os.environ.get("BOT_PASSWORD")
+
+if not email or not password:
+    print("❌ خطأ: لم يتم العثور على BOT_EMAIL أو BOT_PASSWORD في GitHub Secrets!")
+    exit(1)
+
 chrome_options = Options()
-chrome_options.add_argument("--headless=new")  # التشغيل الخفي بدون شاشة
+chrome_options.add_argument("--headless=new")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--disable-gpu")
 chrome_options.add_argument("--window-size=1920,1080")
-chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 
 driver = webdriver.Chrome(options=chrome_options)
 wait = WebDriverWait(driver, 15)
 
-# جلب بيانات تسجيل الدخول من Secrets الخاص بـ GitHub
-USERNAME = os.environ.get("BOT_USERNAME")
-PASSWORD = os.environ.get("BOT_PASSWORD")
-
 try:
-    print("جاري فتح الموقع...")
-    driver.get("https://ahmed-amedo.com/login")  # ضع رابط صفحة تسجيل الدخول هنا
+    print("1. فتح صفحة الدخول...")
+    driver.get("https://ahmed-amedo.com/login")
+    time.sleep(2)
 
-    # تسجيل الدخول
-    print("جاري إدخال بيانات تسجيل الدخول...")
-    user_input = wait.until(EC.presence_of_element_located((By.NAME, "username")))  # عدل اسم الحقل إذا كان مختلفاً
-    pass_input = driver.find_element(By.NAME, "password")
-    
-    user_input.send_keys(USERNAME)
-    pass_input.send_keys(PASSWORD)
-    
+    print("2. جاري إدخال بيانات تسجيل الدخول...")
+    email_input = wait.until(EC.presence_of_element_located((By.XPATH, "//input[@type='email' or @name='email' or @name='username' or @type='text']")))
+    email_input.send_keys(email)
+
+    pass_input = driver.find_element(By.XPATH, "//input[@type='password']")
+    pass_input.send_keys(password)
+
     login_btn = driver.find_element(By.XPATH, "//button[@type='submit']")
     login_btn.click()
-    
-    time.sleep(3)
-    
-    # التوجه لصفحة البوت/الزر
-    print("جاري الانتقال للوحة التحكم ومراقبة الزر...")
-    driver.get("https://ahmed-amedo.com/dashboard")  # ضع رابط لوحة التحكم التي يوجد بها الزر
 
-    # حلقة التكرار لمراقبة والضغط على الزر
-    for i in range(10):
+    print("3. انتظار الانتقال للوحة التحكم ومراقبة الزر...")
+    time.sleep(5)
+    driver.get("https://ahmed-amedo.com/dashboard")
+
+    xpath_btn = "//button[contains(text(), 'تشغيل') or contains(text(), 'Start')]"
+
+    for i in range(1800):
         try:
-            # ابحث عن الزر باستخدام النص أو ID أو Class
-            click_btn = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'تشغيل') or contains(text(), 'Start')]")))
-            click_btn.click()
-            print(f"تم الضغط على الزر بنجاح! (محاولة {i+1})")
-        except Exception as e:
-            print(f"لم يتم العثور على الزر أو غير قابل للضغط حالياً: {e}")
-        
-        time.sleep(5)
+            buttons = driver.find_elements(By.XPATH, xpath_btn)
+            if len(buttons) > 0 and buttons[0].is_displayed():
+                buttons[0].click()
+                print(f"✅ تم الضغط على زر تشغيل البوت بنجاح عند المحاولة {i+1}!")
+                time.sleep(10)
+        except Exception:
+            pass
+        time.sleep(1)
 
-except Exception as main_e:
-    print(f"حدث خطأ أثناء تنفيذ السكريبت: {main_e}")
+except Exception as e:
+    print(f"❌ حدث خطأ أثناء تنفيذ السكريبت: {e}")
 
 finally:
     driver.quit()
