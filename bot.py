@@ -8,7 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 # ==========================================
 # اكتب بيانات دخولك هنا مباشرة بين التنصيص
 USERNAME = "fifa222"
-PASSWORD = "FIFA13133144"
+PASSWORD = "ضع_باسورد_حسابك_هنا"
 # ==========================================
 
 # إعداد خيارات المتصفح للعمل في بيئة GitHub Actions
@@ -47,13 +47,13 @@ try:
     driver.get("https://ahmed-amedo.com/dashboard")
     time.sleep(3)
 
-    print("4. بدء حلقة عمل Refresh للصفحة كل دقيقة لمنع خروج البوتات...")
+    print("4. بدء حلقة عمل Refresh للصفحة كل دقيقتين لمنع خروج البوتات...")
     
-    # يعمل لمدة 30 دقيقة (مُدة التشغيل الافتراضية للجيت هب)
-    for minute in range(1, 31):
-        time.sleep(60)  # الانتظار 60 ثانية
+    # يعمل لمدة 30 دقيقة (إجمالي 15 مرة ريفريش)
+    for cycle in range(1, 16):
+        time.sleep(120)  # الانتظار لمدة 120 ثانية (دقيقتين)
         driver.refresh()
-        print(f"🔄 تم عمل Refresh للصفحة بنجاح (الدقيقة {minute}/30)")
+        print(f"🔄 تم عمل Refresh للصفحة بنجاح (المحاولة {cycle}/15 - مرّت {cycle * 2} دقيقة)")
 
 except Exception as e:
     print(f"❌ حدث خطأ أثناء تنفيذ السكريبت: {e}")
