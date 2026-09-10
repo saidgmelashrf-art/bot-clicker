@@ -2,6 +2,8 @@ import time
 import os
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 options = webdriver.ChromeOptions()
 options.add_argument("--headless")
@@ -14,39 +16,47 @@ email = os.environ.get("BOT_EMAIL")
 password = os.environ.get("BOT_PASSWORD")
 
 try:
-    print("1. تسجيل الدخول...")
+    print("1. فتح صفحة الدخول...")
     driver.get("https://ahmed-amedo.com/login")
     time.sleep(3)
 
-    driver.find_element(By.XPATH, "//input[@type='email']").send_keys(email)
-    driver.find_element(By.XPATH, "//input[@type='password']").send_keys(password)
-    driver.find_element(By.XPATH, "//button[@type='submit']").click()
+    print("2. إدخال البيانات...")
+    # إدخال البيانات باستخدام اسم العنصر بدلاً من الـ XPath العام
+    email_input = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.NAME, "email"))
+    )
+    email_input.send_keys(email)
+
+    pass_input = driver.find_element(By.NAME, "password")
+    pass_input.send_keys(password)
+
+    # الضغط على زر الدخول
+    login_btn = driver.find_element(By.XPATH, "//button[@type='submit']")
+    login_btn.click()
+
+    print("3. انتظار الانتقال للوحة التحكم والبحث عن الزرار...")
     time.sleep(5)
 
-    print("2. بدء المراقبة المستمرة كل ثانية...")
+    # الانتقال للوحة التحكم مباشرة للتأكيد
+    driver.get("https://ahmed-amedo.com/dashboard")
+    time.sleep(3)
+
     xpath_btn = "//button[contains(text(), 'تشغيل البوت')]"
 
-    # الحلقة التكرارية تفحص وجود الزرار كل ثانية لمدة 30 دقيقة
+    # التكرار لمدة 30 دقيقة يفحص وجود الزرار كل ثانية
     for i in range(1800):
         try:
-            # البحث عن الزرار في الصفحة
             buttons = driver.find_elements(By.XPATH, xpath_btn)
-            
             if len(buttons) > 0 and buttons[0].is_displayed():
                 buttons[0].click()
-                print(f"✅ تم العثور على الزرار والضغط عليه بنجاح في الثانية رقم {i+1}!")
-                time.sleep(10) # انتظار قليلاً لتأكيد الضغط
-            else:
-                # إذا لم يكن الزرار موجوداً أو تم الضغط عليه، انتظر ثانية واحدة وكرر الفحص
-                pass
-
-        except Exception as inner_e:
+                print(f"✅ تم الضغط على زر تشغيل البوت بنجاح عند المحاولة {i+1}!")
+                time.sleep(15)
+        except Exception:
             pass
-
-        time.sleep(1) # الفحص كل ثانية واحدة بالضبط
+        time.sleep(1)
 
 except Exception as e:
-    print(f"❌ حدث خطأ الرئيسي: {e}")
+    print(f"❌ حدث خطأ: {e}")
 
 finally:
     driver.quit()
