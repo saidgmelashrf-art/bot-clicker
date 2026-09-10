@@ -2,7 +2,7 @@ name: Auto Clicker Bot
 
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '*/30 * * * *'  # يعمل تلقائياً كل 30 دقيقة
   workflow_dispatch:
 
 jobs:
@@ -22,4 +22,7 @@ jobs:
           pip install selenium
 
       - name: Run bot script
+        env:
+          BOT_EMAIL: ${{ secrets.BOT_EMAIL }}
+          BOT_PASSWORD: ${{ secrets.BOT_PASSWORD }}
         run: python bot.py
